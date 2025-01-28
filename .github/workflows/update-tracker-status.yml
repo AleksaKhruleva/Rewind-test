@@ -1,0 +1,35 @@
+name: Update Tracker Status to Review
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract issue key from PR title
+        id: extract_issue_key
+        run: |
+          echo "Pull request title: ${{ github.event.pull_request.title }}"
+          if [[ "${{ github.event.pull_request.title }}" =~ ^([A-Z]+-[0-9]+): ]]; then
+            echo "ISSUE_KEY=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+          else
+            echo "No issue key found in PR title. Skipping..."
+            exit 1
+          fi
+
+      - name: Update Tracker Task to inReview
+        env:
+          YANDEX_TRACKER_TOKEN: ${{ secrets.YANDEX_TRACKER_TOKEN }}
+          YANDEX_CLOUD_ORG_ID: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
+          ISSUE_KEY: ${{ env.ISSUE_KEY }}
+        run: |
+          echo "Updating issue $ISSUE_KEY to 'В ревью' status..."
+          curl -X PATCH "https://api.tracker.yandex.net/v2/issues/$ISSUE_KEY" \
+            -H "Authorization: OAuth $YANDEX_TRACKER_TOKEN" \
+            -H "X-Cloud-Org-ID: $YANDEX_CLOUD_ORG_ID" \
+            -H "Content-Type: application/json" \
+            -d '{"status": "inReview"}'
