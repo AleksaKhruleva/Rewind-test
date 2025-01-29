@@ -16,12 +16,16 @@ jobs:
 
       - name: Check PR Title Format
         id: check_pr_title
-        uses: ./.github/actions/check-pr-title  # Используем локальный экшн для проверки названия PR
+        uses: ./.github/actions/check-pr-title  # Используем экшн для проверки названия PR
         with:
           pr_title: ${{ github.event.pull_request.title }}
 
+      - name: Debug Issue Key
+        run: |
+          echo "🔑 Extracted ISSUE_KEY: ${{ steps.check_pr_title.outputs.issue_key }}"  # Проверяем, что ISSUE_KEY передаётся
+
       - name: Update Task Status to "In Review"
-        uses: ./.github/actions/update-task-status  # Используем локальный экшн для обновления статуса
+        uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
         with:
           issue_key: ${{ steps.check_pr_title.outputs.issue_key }}  # Передаём ключ задачи из предыдущего экшна
           transition_id: "inReview1"
