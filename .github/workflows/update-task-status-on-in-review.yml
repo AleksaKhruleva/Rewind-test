@@ -1,4 +1,4 @@
-name: Update Task Status on inReview
+name: Update Task Status on PR Open
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - opened
 
 jobs:
-  update-status:
+  update-task-status-on-pr-open:  # Изменено название работы
     runs-on: ubuntu-latest
 
     steps:
