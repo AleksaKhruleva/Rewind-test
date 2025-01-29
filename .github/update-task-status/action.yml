@@ -1,0 +1,35 @@
+name: Update Task Status
+description: Sends a request to Yandex Tracker API to update the task status.
+
+inputs:
+  issue_key:
+    description: The ISSUE_KEY to update.
+    required: true
+  transition_id:
+    description: The transition ID to set the new status.
+    required: true
+  yandex_token:
+    description: The OAuth token for Yandex Tracker API.
+    required: true
+  yandex_org_id:
+    description: The organization ID for Yandex Tracker API.
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update Tracker Task Status
+      shell: bash
+      run: |
+        echo "ℹ️ Updating task ${{ inputs.issue_key }} to status transition ${{ inputs.transition_id }}..."
+        RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://api.tracker.yandex.net/v2/issues/${{ inputs.issue_key }}/transitions/${{ inputs.transition_id }}/_execute" \
+          -H "Authorization: OAuth ${{ inputs.yandex_token }}" \
+          -H "X-Cloud-Org-ID: ${{ inputs.yandex_org_id }}")
+
+        if [ "$RESPONSE" -ne 200 ]; then
+          echo "❌ Error updating task. Response code: $RESPONSE"
+          cat response.txt
+          exit 1
+        else
+          echo "✅ Task ${{ inputs.issue_key }} updated successfully!"
+        fi
