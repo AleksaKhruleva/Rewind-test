@@ -29,3 +29,4 @@ runs:
         else
           echo "❌ Invalid PR title format. Expected 'REWIND-{number}: description'"
           exit 1
+        fi
