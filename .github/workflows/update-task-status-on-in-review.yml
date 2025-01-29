@@ -22,12 +22,12 @@ jobs:
 
       - name: Debug Issue Key
         run: |
-          echo "🔑 Extracted ISSUE_KEY: ${{ steps.check_pr_title.outputs.issue_key }}"  # Проверяем, что ISSUE_KEY передаётся
+          echo "🔑 Extracted ISSUE_KEY: ${{ env.ISSUE_KEY }}"  # Проверяем, что ISSUE_KEY передаётся
 
       - name: Update Task Status to "inReview"
         uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
         with:
-          issue_key: ${{ steps.check_pr_title.outputs.issue_key }}  # Передаём ключ задачи из предыдущего экшна
+          issue_key: ${{ env.ISSUE_KEY }}  # Используем ключ задачи из окружения
           transition_id: "inReview1"
           yandex_token: ${{ secrets.YANDEX_TRACKER_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
