@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - closed  # Срабатывает, когда PR закрывается (но проверяем, был ли он слит)
+      - opened  # Срабатывает, когда PR открывается
 
 jobs:
   update-status:
@@ -13,16 +14,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check if PR Was Merged
+      - name: Check if PR Was Merged or Reopened
+        id: check_merged_or_reopened
         run: |
-          # Проверяем, был ли PR слит
           echo "📌 PR merged? ${{ github.event.pull_request.merged }}"
+          echo "📌 PR action: ${{ github.event.action }}"
 
+          # Если PR закрыт, но не слит, то не выполняем действия
           if [[ "${{ github.event.pull_request.merged }}" != "true" ]]; then
-            echo "❌ PR закрыт, но не был слит. Workflow не выполняется."
-            exit 1
+            echo "❌ PR закрыт, но не был слит. Пропускаем выполнение оставшихся шагов."
+            echo "skip=true" >> $GITHUB_ENV  # Ставим флаг, чтобы пропустить следующие шаги
           fi
-          echo "✅ PR был слит (merged), продолжаем выполнение."
+
+          # Проверяем, был ли PR повторно открыт
+          if [[ "${{ github.event.action }}" == "opened" ]]; then
+            echo "✅ PR был открыт заново. Сбрасываем флаг."
+            echo "skip=false" >> $GITHUB_ENV
+          fi
 
       - name: Validate PR Title Format and Extract ISSUE_KEY
         id: check_pr_title
@@ -47,6 +55,7 @@ jobs:
           echo "🔑 Extracted ISSUE_KEY: ${{ env.ISSUE_KEY }}"  # Проверяем, что ISSUE_KEY передаётся
 
       - name: Update Task Status to "Merged"
+        if: env.skip != 'true'  # Пропускаем этот шаг, если PR не был слит или был открыт заново
         shell: bash
         run: |
           if [ -z "${{ env.ISSUE_KEY }}" ]; then
