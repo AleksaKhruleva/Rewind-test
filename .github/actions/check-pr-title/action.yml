@@ -18,11 +18,13 @@ runs:
       run: |
         echo "📌 Validating PR title: ${{ inputs.pr_title }}"
 
-        # Используем регулярное выражение для проверки
+        # Проверяем формат и извлекаем ключ задачи
         if [[ "${{ inputs.pr_title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
           ISSUE_KEY="${BASH_REMATCH[1]}"
           echo "🔑 Extracted ISSUE_KEY: $ISSUE_KEY"
-          echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+          
+          # Правильная передача ISSUE_KEY
+          echo "issue_key=$ISSUE_KEY" >> $GITHUB_ENV  # Используем GITHUB_ENV для передачи значения
         else
           echo "❌ Invalid PR title format. Expected 'REWIND-{number}: description'"
           exit 1
