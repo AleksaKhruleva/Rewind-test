@@ -1,4 +1,4 @@
-name: Update Task Status on inReview
+name: Update Task Status on In Review
 
 on:
   pull_request:
@@ -11,47 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Log Target Branch
-        run: |
-          echo "📌 Target branch: ${{ github.event.pull_request.base.ref }}"
-
-      - name: Extract Issue Key from PR Title
-        id: extract_issue_key
-        run: |
-          echo "📌 Pull request title: ${{ github.event.pull_request.title }}"
-
-          # Проверяем, что заголовок начинается с "REWIND-{число}", где число не начинается с 0
-          if [[ "${{ github.event.pull_request.title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
-            ISSUE_KEY="${BASH_REMATCH[1]}"
-            echo "🔑 Найден ключ задачи: $ISSUE_KEY"
-            echo "ISSUE_KEY=$ISSUE_KEY" >> $GITHUB_ENV
-          else
-            echo "❌ Ошибка: Заголовок PR должен начинаться с 'REWIND-{число}:' (где число не начинается с 0)"
-            exit 1
-          fi
+      - name: Check PR Title Format
+        id: check_pr_title
+        uses: ./.github/actions/check-pr-title  # Используем экшн для проверки названия PR
+        with:
+          pr_title: ${{ github.event.pull_request.title }}
 
       - name: Update Task Status to "In Review"
-        env:
-          YANDEX_TRACKER_TOKEN: ${{ secrets.YANDEX_TRACKER_TOKEN }}
-          YANDEX_CLOUD_ORG_ID: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
-          ISSUE_KEY: ${{ env.ISSUE_KEY }}
-          TRANSITION_ID: "inReview1"
-        run: |
-          if [ -z "$ISSUE_KEY" ]; then
-            echo "❌ Ошибка: ISSUE_KEY не найден!"
-            exit 1
-          fi
-
-          echo "ℹ️ Обновление задачи $ISSUE_KEY до статуса 'In Review'..."
-          
-          RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://api.tracker.yandex.net/v2/issues/$ISSUE_KEY/transitions/$TRANSITION_ID/_execute" \
-            -H "Authorization: OAuth $YANDEX_TRACKER_TOKEN" \
-            -H "X-Cloud-Org-ID: $YANDEX_CLOUD_ORG_ID")
-
-          if [ "$RESPONSE" -ne 200 ]; then
-            echo "❌ Ошибка при обновлении задачи. Код ответа: $RESPONSE"
-            cat response.txt
-            exit 1
-          else
-            echo "✅ Успешно обновлён статус задачи $ISSUE_KEY до 'In Review'"
-          fi
+        uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
+        with:
+          issue_key: ${{ steps.check_pr_title.outputs.issue_key }}  # Передаём ключ задачи из предыдущего экшна
+          transition_id: "inReview1"
+          yandex_token: ${{ secrets.YANDEX_TRACKER_TOKEN }}
+          yandex_org_id: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
