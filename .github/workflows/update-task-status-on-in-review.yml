@@ -1,4 +1,4 @@
-name: Update Tracker Status to Review
+name: Update Task Status on inReview
 
 on:
   pull_request:
@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Log target branch
+      - name: Log Target Branch
         run: |
           echo "📌 Target branch: ${{ github.event.pull_request.base.ref }}"
 
-      - name: Extract issue key from PR title
+      - name: Extract Issue Key from PR Title
         id: extract_issue_key
         run: |
           echo "📌 Pull request title: ${{ github.event.pull_request.title }}"
-          
+
           # Проверяем, что заголовок начинается с "REWIND-{число}", где число не начинается с 0
           if [[ "${{ github.event.pull_request.title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
             ISSUE_KEY="${BASH_REMATCH[1]}"
@@ -30,7 +30,7 @@ jobs:
             exit 1
           fi
 
-      - name: Update Tracker Task to "In Review"
+      - name: Update Task Status to "In Review"
         env:
           YANDEX_TRACKER_TOKEN: ${{ secrets.YANDEX_TRACKER_TOKEN }}
           YANDEX_CLOUD_ORG_ID: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
@@ -42,7 +42,7 @@ jobs:
             exit 1
           fi
 
-          echo "ℹ️ Обновление задачи $ISSUE_KEY до статуса 'В ревью'..."
+          echo "ℹ️ Обновление задачи $ISSUE_KEY до статуса 'In Review'..."
           
           RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://api.tracker.yandex.net/v2/issues/$ISSUE_KEY/transitions/$TRANSITION_ID/_execute" \
             -H "Authorization: OAuth $YANDEX_TRACKER_TOKEN" \
@@ -53,5 +53,5 @@ jobs:
             cat response.txt
             exit 1
           else
-            echo "✅ Успешно обновлён статус задачи $ISSUE_KEY до 'В ревью'"
+            echo "✅ Успешно обновлён статус задачи $ISSUE_KEY до 'In Review'"
           fi
