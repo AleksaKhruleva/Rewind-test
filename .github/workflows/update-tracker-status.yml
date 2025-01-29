@@ -17,19 +17,32 @@ jobs:
           if [[ "${{ github.event.pull_request.title }}" =~ ^([A-Z]+-[0-9]+): ]]; then
             echo "ISSUE_KEY=${BASH_REMATCH[1]}" >> $GITHUB_ENV
           else
-            echo "No issue key found in PR title. Skipping..."
+            echo "❌ No issue key found in PR title. Skipping..."
             exit 1
           fi
 
-      - name: Update Tracker Task to inReview
+      - name: Update Tracker Task to "In Review"
         env:
           YANDEX_TRACKER_TOKEN: ${{ secrets.YANDEX_TRACKER_TOKEN }}
           YANDEX_CLOUD_ORG_ID: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
           ISSUE_KEY: ${{ env.ISSUE_KEY }}
+          TRANSITION_ID: "inReview1"
         run: |
-          echo "Updating issue $ISSUE_KEY to 'В ревью' status..."
-          curl -X PATCH "https://api.tracker.yandex.net/v2/issues/$ISSUE_KEY" \
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "❌ Ошибка: ISSUE_KEY не найден!"
+            exit 1
+          fi
+
+          echo "ℹ️ Обновление задачи $ISSUE_KEY до статуса 'В ревью'..."
+          
+          RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://api.tracker.yandex.net/v2/issues/$ISSUE_KEY/transitions/$TRANSITION_ID/_execute" \
             -H "Authorization: OAuth $YANDEX_TRACKER_TOKEN" \
-            -H "X-Cloud-Org-ID: $YANDEX_CLOUD_ORG_ID" \
-            -H "Content-Type: application/json" \
-            -d '{"status": "inReview"}'
+            -H "X-Cloud-Org-ID: $YANDEX_CLOUD_ORG_ID")
+
+          if [ "$RESPONSE" -ne 200 ]; then
+            echo "❌ Ошибка при обновлении задачи. Код ответа: $RESPONSE"
+            cat response.txt
+            exit 1
+          else
+            echo "✅ Успешно обновлён статус задачи $ISSUE_KEY до 'В ревью'"
+          fi
