@@ -27,7 +27,7 @@ jobs:
       - name: Update Task Status to "inReview"
         uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
         with:
-          issue_key: ${{ env.ISSUE_KEY }}  # Передаём ключ задачи из предыдущего экшна
+          issue_key: ${{ steps.check_pr_title.outputs.issue_key }}  # Передаём ключ задачи из предыдущего экшна
           transition_id: "inReview1"
           yandex_token: ${{ secrets.YANDEX_TRACKER_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_CLOUD_ORG_ID }}
