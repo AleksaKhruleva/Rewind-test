@@ -24,8 +24,8 @@ runs:
           ISSUE_KEY="${BASH_REMATCH[1]}"
           echo "🔑 Extracted ISSUE_KEY: $ISSUE_KEY"
           
-          # Передаем значение ISSUE_KEY как output
-          echo "::set-output name=issue_key::$ISSUE_KEY"
+          # Записываем ISSUE_KEY в файл окружения
+          echo "ISSUE_KEY=$ISSUE_KEY" >> $GITHUB_ENV
         else
           echo "❌ Invalid PR title format. Expected 'REWIND-{number}: description'"
           exit 1
