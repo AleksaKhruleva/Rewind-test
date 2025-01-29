@@ -1,0 +1,27 @@
+name: Check PR Title
+description: Validates the PR title format and extracts ISSUE_KEY.
+
+inputs:
+  pr_title:
+    description: The title of the Pull Request.
+    required: true
+
+outputs:
+  issue_key:
+    description: Extracted ISSUE_KEY from the PR title.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate PR Title Format
+      shell: bash
+      run: |
+        echo "📌 Validating PR title: ${{ inputs.pr_title }}"
+        
+        if [[ "${{ inputs.pr_title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
+          ISSUE_KEY="${BASH_REMATCH[1]}"
+          echo "🔑 Extracted ISSUE_KEY: $ISSUE_KEY"
+          echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Invalid PR title format. Expected 'REWIND-{number}: description'"
+          exit 1
