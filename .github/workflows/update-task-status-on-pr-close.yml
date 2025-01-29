@@ -6,7 +6,7 @@ on:
       - closed  # Срабатывает, когда PR закрывается
 
 jobs:
-  update-status:
+  update-task-status-on-pr-close-merge:  # Изменено название работы
     runs-on: ubuntu-latest
 
     steps:
