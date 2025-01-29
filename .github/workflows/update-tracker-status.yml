@@ -6,7 +6,7 @@ on:
       - opened
       - reopened
     branches:
-      - '*'
+      - develop  # Срабатывает для PR, направленных в develop
 
 jobs:
   update-status:
@@ -16,13 +16,19 @@ jobs:
       - name: Log target branch
         run: |
           echo "Target branch: ${{ github.event.pull_request.base.ref }}"
+          if [[ "${{ github.event.pull_request.base.ref }}" != "develop" ]]; then
+            echo "❌ Workflow не запущен, так как PR не в develop."
+            exit 1
+          fi
 
       - name: Extract issue key from PR title
         id: extract_issue_key
         run: |
           echo "Pull request title: ${{ github.event.pull_request.title }}"
           if [[ "${{ github.event.pull_request.title }}" =~ ^([A-Z]+-[0-9]+): ]]; then
-            echo "ISSUE_KEY=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+            ISSUE_KEY="${BASH_REMATCH[1]}"
+            echo "🔑 Найден ключ задачи: $ISSUE_KEY"
+            echo "ISSUE_KEY=$ISSUE_KEY" >> $GITHUB_ENV
           else
             echo "❌ No issue key found in PR title. Skipping..."
             exit 1
