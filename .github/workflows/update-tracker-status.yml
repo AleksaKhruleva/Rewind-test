@@ -4,12 +4,18 @@ on:
   pull_request:
     types:
       - opened
+    branches:
+      - develop
 
 jobs:
   update-status:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Log target branch
+        run: |
+          echo "Target branch: ${{ github.event.pull_request.base.ref }}"
+
       - name: Extract issue key from PR title
         id: extract_issue_key
         run: |
