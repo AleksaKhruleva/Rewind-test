@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "🔑 Extracted ISSUE_KEY: ${{ steps.check_pr_title.outputs.issue_key }}"  # Проверяем, что ISSUE_KEY передаётся
 
-      - name: Update Task Status to "In Review"
+      - name: Update Task Status to "inReview"
         uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
         with:
           issue_key: ${{ env.ISSUE_KEY }}  # Передаём ключ задачи из предыдущего экшна
