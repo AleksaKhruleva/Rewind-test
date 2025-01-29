@@ -22,7 +22,7 @@ jobs:
 
       - name: Debug Issue Key
         run: |
-          echo "🔑 Extracted ISSUE_KEY: ${{ env.ISSUE_KEY }}"  # Проверяем, что ISSUE_KEY передаётся
+          echo "🔑 Extracted ISSUE_KEY: ${{ env.$ISSUE_KEY }}"  # Проверяем, что ISSUE_KEY передаётся
 
       - name: Update Task Status to "inReview"
         uses: ./.github/actions/update-task-status  # Используем экшн для обновления статуса
