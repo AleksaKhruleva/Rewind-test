@@ -17,7 +17,8 @@ runs:
       shell: bash
       run: |
         echo "📌 Validating PR title: ${{ inputs.pr_title }}"
-        
+
+        # Используем регулярное выражение для проверки
         if [[ "${{ inputs.pr_title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
           ISSUE_KEY="${BASH_REMATCH[1]}"
           echo "🔑 Extracted ISSUE_KEY: $ISSUE_KEY"
@@ -25,3 +26,4 @@ runs:
         else
           echo "❌ Invalid PR title format. Expected 'REWIND-{number}: description'"
           exit 1
+        fi
