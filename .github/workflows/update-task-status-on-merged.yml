@@ -3,26 +3,29 @@ name: Update Task Status on Merged
 on:
   pull_request:
     types:
-      - closed  # Событие закрытия PR (но фильтруем его дальше)
+      - closed  # Запускается, когда PR закрывается (но проверяем, был ли он слит)
 
 jobs:
   update-status:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if PR was merged
+      - name: Check if PR Was Merged
         run: |
+          echo "📌 Target branch: ${{ github.event.pull_request.base.ref }}"
+          echo "📝 PR merged? ${{ github.event.pull_request.merged }}"
+
           if [[ "${{ github.event.pull_request.merged }}" != "true" ]]; then
             echo "❌ PR закрыт, но не был слит. Workflow не выполняется."
             exit 1
           fi
           echo "✅ PR был слит (merged), продолжаем выполнение."
 
-      - name: Extract issue key from PR title
+      - name: Extract Issue Key from PR Title
         id: extract_issue_key
         run: |
           echo "📌 Pull request title: ${{ github.event.pull_request.title }}"
-          
+
           # Проверяем, что заголовок начинается с "REWIND-{число}", где число не начинается с 0
           if [[ "${{ github.event.pull_request.title }}" =~ ^(REWIND-[1-9][0-9]*): ]]; then
             ISSUE_KEY="${BASH_REMATCH[1]}"
