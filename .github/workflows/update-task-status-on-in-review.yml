@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - reopened
 
 jobs:
   update-task-status-on-pr-open:  # Изменено название работы
